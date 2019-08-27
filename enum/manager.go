@@ -1,33 +1,43 @@
-package kernel
+package enum
 
-const E_WARN int = 2
-const E_OK int = 1
-const E_ERROR int = 3
-const E_NORMAL int = 0
+const LEVEL_NORMAL int = 0
+const LEVEL_SUCCESS int = 1
+const LEVEL_INFO int = 2
+const LEVEL_WARN int = 3
+const LEVEL_ERROR int = 4
 
 type EnumItem struct {
 	Value interface{} `json:"value"`
 	Label string      `json:"label"`
 	Level int         `json:"level"`
 }
-type EnumManager struct {
+type EnumSet struct {
 	KeyName string
 	m       []EnumItem
 }
 
-var EnumContainers []*EnumManager = []*EnumManager{}
+type EnumManager struct {
+	Sets []*EnumSet
+}
 
-func NewEnumManager(key string, m []EnumItem) *EnumManager {
+func NewEnumManager() *EnumManager {
 
-	instance := &EnumManager{
+	return &EnumManager{
+		Sets: []*EnumSet{},
+	}
+}
+
+func (e *EnumManager) AddEnumSet(key string, m []EnumItem) *EnumSet {
+
+	instance := EnumSet{
 		KeyName: key,
 		m:       m,
 	}
-	EnumContainers = append(EnumContainers, instance)
-	return instance
+	e.Sets = append(e.Sets, &instance)
+	return &instance
 }
 
-func (e *EnumManager) ContainsLabel(value string) bool {
+func (e *EnumSet) ContainsLabel(value string) bool {
 	for _, val := range e.m {
 		if value == val.Label {
 			return true
@@ -35,10 +45,10 @@ func (e *EnumManager) ContainsLabel(value string) bool {
 	}
 	return false
 }
-func (e *EnumManager) GetData() []EnumItem {
+func (e *EnumSet) GetData() []EnumItem {
 	return e.m
 }
-func (e *EnumManager) ContainsValue(value interface{}) bool {
+func (e *EnumSet) ContainsValue(value interface{}) bool {
 	for _, item := range e.m {
 		if item.Value == value {
 			return true
@@ -47,7 +57,7 @@ func (e *EnumManager) ContainsValue(value interface{}) bool {
 	return false
 }
 
-func (e *EnumManager) GetLabel(key interface{}) string {
+func (e *EnumSet) GetLabel(key interface{}) string {
 	for _, item := range e.m {
 		if key == item.Value {
 			return item.Label
